@@ -59,9 +59,6 @@ Coordinates=375,313,60,36
 [ppRepBalancete]
 Coordinates=575,111,109,36
 
-[ppDBCalc4]
-Coordinates=286,313,79,36
-
 [dsBalancete]
 Coordinates=0,0,85,36
 
@@ -98,17 +95,11 @@ Coordinates=337,350,108,36
 [ppDesignLayer1]
 Coordinates=228,350,108,36
 
-[ppDBCalc3]
-Coordinates=575,386,79,36
-
 [ppLabel3]
 Coordinates=506,387,67,36
 
 [ppDBCalc1]
 Coordinates=417,387,79,36
-
-[ppImage1]
-Coordinates=338,387,71,36
 
 [ppShape1]
 Coordinates=259,387,73,36
@@ -123,5 +114,11 @@ Coordinates=101,387,67,36
 Coordinates=99,350,126,36
 
 []
-Coordinates=0,351,91,36
+Coordinates=338,387,71,36
+
+[ppDBCalcCredito]
+Coordinates=575,386,79,36
+
+[ppDBCalcDebito]
+Coordinates=286,313,79,36
 

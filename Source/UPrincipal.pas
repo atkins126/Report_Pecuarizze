@@ -42,11 +42,13 @@ type
     edtcategoria: TEdit;
     edtAtividade: TEdit;
     edtCentroCusto: TEdit;
+    edtIdPlanoContas: TEdit;
     procedure FormShow(Sender: TObject);
     procedure btnGerarClick(Sender: TObject);
   private
     { Private declarations }
   public
+    vStateCode:integer;
     function ConectaPG_LOCAL: TJSONObject;
     function LerIni(Diretorio,Chave1, Chave2, ValorPadrao: String): String;
     function GetVersaoArq: string;
@@ -65,15 +67,30 @@ uses UdmRep;
 
 procedure TfrmPrincipal.btnGerarClick(Sender: TObject);
 begin
- if cbxRelatorio.ItemIndex=0 then
-  dmReports.AbreQryBalancente(
-   edtIdCliente.Text,
-   edtIni.Text,
-   edtFim.Text,
-   edtAtividade.Text,
-   edtcategoria.Text,
-   edtNatureza.Text,
-   edtCentroCusto.Text);
+// if cbxRelatorio.ItemIndex=0 then
+// begin
+//  dmReports.AbreQryBalancente(
+//   edtIdCliente.Text,
+//   edtIni.Text,
+//   edtFim.Text,
+//   edtAtividade.Text,
+//   edtcategoria.Text,
+//   edtNatureza.Text,
+//   edtCentroCusto.Text,
+//   edtIdPlanoContas.Text);
+// end;
+// if cbxRelatorio.ItemIndex=1 then
+// begin
+//  dmReports.AbreQryExtrato(
+//   edtIdCliente.Text,
+//   edtIni.Text,
+//   edtFim.Text,
+//   edtAtividade.Text,
+//   edtcategoria.Text,
+//   edtNatureza.Text,
+//   edtCentroCusto.Text,
+//   edtIdPlanoContas.Text);
+// end;
 end;
 
 function TfrmPrincipal.ConectaPG_LOCAL: TJSONObject;
@@ -102,7 +119,7 @@ begin
  end
  else
  begin
-   vVendorLib := ExtractFilePath(ParamStr(0))+'DrivesDB\libpq_32.dll';
+   vVendorLib := ExtractFilePath(ParamStr(0))+'libpq.dll';
    dbName     := LerIni(Arquivo,'LOCAL','Database','');
    dbServer   := LerIni(Arquivo,'LOCAL','Server','');
    vRDS       := LerIni(Arquivo,'LOCAL','RDS','');
@@ -113,10 +130,10 @@ begin
     begin
      Params.Values['DriverID']        := 'PG';
      Params.Values['User_name']       := 'postgres';
-     Params.Values['Database']        := dbName;
+     Params.Values['Database']        := 'Pecuarizze';
      Params.Values['Password']        := 'Dev#110485';
      Params.Values['DriverName']      := 'PG';
-     Params.Values['Server']          := dbServer;
+     Params.Values['Server']          := '3.22.100.144';
      Params.Values['Port']            := '5432';
      PgDriverLink.VendorLib           := vVendorLib;
     end
@@ -159,6 +176,38 @@ end;
 procedure TfrmPrincipal.FormShow(Sender: TObject);
 begin
   ConectaPG_LOCAL;
+  edtIni.Date := StrToDate('01/01/2021');
+  THorse.Use(Jhonson);
+  THorse.Use(HandleException);
+  THorse.Get('/ping',
+  procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+  begin
+    Res.Send('pong');
+  end);
+  THorse.Listen(8089, procedure(Horse: THorse)
+  begin
+    lblWS.Text := ('WS Report Pecuarizze Rodando no ip:'+IdIPWatch1.LocalIP+' na porta: ' + Horse.Port.ToString+' Versão:'+GetVersaoArq);
+    Application.ProcessMessages;
+  end);
+  THorse.Post('/GeraReport',
+    procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
+    var
+      LBody,LBodyRed: TJSONObject;
+    begin
+      mLog.Lines.Add(FormatDateTime('dd-mm-yyyy-hh:mm:ss',now)+' Lista Animais');
+      LBody := Req.Body<TJSONObject>;
+      try
+       mLog.Lines.Add(FormatDateTime('dd-mm-yyyy-hh:mm:ss',now)+' Lendo :'+LBody.ToString);
+       LBodyRed:= dmReports.GeraReport(LBody);
+       mLog.Lines.Add(FormatDateTime('dd-mm-yyyy-hh:mm:ss',now)+' OK :'+LBodyRed.ToString);
+       Res.Send(LBodyRed).Status(vStateCode)
+       except on ex:exception do
+       begin
+        mLog.Lines.Add(FormatDateTime('dd-mm-yyyy-hh:mm:ss',now)+' Erro :'+ex.Message);
+        Res.Send(tjsonobject.Create.AddPair('Mensagem', ex.Message)).Status(500);
+       end;
+      end;
+    end);
 end;
 
 function TfrmPrincipal.GetVersaoArq: string;
