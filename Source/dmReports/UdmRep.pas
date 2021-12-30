@@ -237,7 +237,7 @@ begin
  vCategoria     := vJoItemO.GetValue('idcategoriafinanceira').value;
  vNatureza      := vJoItemO.GetValue('idnatureza').value;
  vCentroCusto   := vJoItemO.GetValue('idcentrocusto').value;
- vPlanoContas   := vJoItemO.GetValue('idpanocontas').value;
+ vPlanoContas   := vJoItemO.GetValue('idplanocontas').value;
  if vReportName='Balancete' then
  begin
    AbreQryBalancente(
